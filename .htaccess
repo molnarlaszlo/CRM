@@ -1,0 +1,128 @@
+###			HYPERTEXT ACCESS FILE		 ###
+##		Directory-level configuration 	  ##
+##		used by _STEAMPUNK_ framework 	  ##
+###			DONT EDIT ON LIVE PLS	 	 ###
+
+# Part: Handle some gossip HTTP status codes
+# Used: Hide errors on live servers for sec.
+ErrorDocument 203 /index.php
+ErrorDocument 204 /index.php
+ErrorDocument 205 /index.php
+ErrorDocument 206 /index.php
+ErrorDocument 300 /index.php
+ErrorDocument 303 /index.php
+ErrorDocument 304 /index.php
+ErrorDocument 305 /index.php
+ErrorDocument 400 /index.php
+ErrorDocument 401 /index.php
+ErrorDocument 402 /index.php
+ErrorDocument 403 /banned.php
+ErrorDocument 404 /index.php
+ErrorDocument 405 /index.php
+ErrorDocument 406 /index.php
+ErrorDocument 407 /index.php
+ErrorDocument 408 /index.php
+ErrorDocument 409 /index.php
+ErrorDocument 410 /index.php
+ErrorDocument 411 /index.php
+ErrorDocument 412 /index.php
+ErrorDocument 413 /index.php
+ErrorDocument 414 /index.php
+ErrorDocument 415 /index.php
+ErrorDocument 416 /index.php
+ErrorDocument 417 /index.php
+ErrorDocument 500 /index.php
+ErrorDocument 501 /index.php
+ErrorDocument 502 /index.php
+ErrorDocument 503 /index.php
+ErrorDocument 504 /index.php
+ErrorDocument 505 /index.php
+
+# Part: Firstly allow every connection
+# Used: Allow normal users to connect.
+<RequireAll>
+	Require all granted
+</RequireAll>
+
+# Prevent .htaccess files from being spidered or viewed via a web browser.
+<Files ".ht*">
+  Require all denied
+</Files>
+
+# We are nice so we give free access to banned.php for everybody.
+# It is needed to show the blank page on host/ip ban (http  403).
+<Files "banned.php">
+	Require all granted
+</Files>
+
+# Overwrite Apache configuration
+Options None
+
+# Hide hidden files in every dir
+Options -Indexes
+
+# Turn off Server Side Includes and CGI Execution
+Options -Includes
+Options -ExecCGI
+
+#
+Options -FollowSymLinks
+
+# For prevent 403 RewriteEngine
+Options +SymLinksIfOwnerMatch
+
+# Override Apache config to make sure we have
+# the right index file (not htm, html, py, etc)
+DirectoryIndex index.php
+
+# Skip the download dialoge.
+AddType application/octet-stream .pdf
+AddType application/octet-stream .zip
+
+# Secure directory by disabling script execution (cause 403).
+RemoveHandler cgi-script .php .pl .py .jsp .asp .htm .shtml .sh .cgi
+
+# Engines
+RewriteEngine On
+RewriteBase /
+
+# Deny access to the PHP credits and easter eggs.
+RewriteCond %{QUERY_STRING} \=PHP[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12} [NC]
+RewriteRule .* - [F]
+
+# Disable HTTP TRACK and TRACE
+RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
+RewriteRule .* - [F]
+
+# Skip WWW format.
+RewriteBase /
+RewriteCond %{HTTP_HOST} ^www.ultrablock.hu [NC]
+RewriteRule ^(.*)$ http://ultrablock.hu/$1 [L,R=301]
+
+# Hotlink prevention to save bandwith.
+RewriteBase /
+RewriteCond %{HTTP_REFERER} !^$
+RewriteCond %{HTTP_REFERER} !^http://(www.)?ultrablock.hu/.*$ [NC]
+RewriteRule .(gif|jpg|swf|flv|png)$ /feed/ [R=302,L]
+
+# proc/self/environ? no way!
+RewriteBase /
+RewriteCond %{QUERY_STRING} proc/self/environ [OR]
+
+# Block out any script trying to set a mosConfig value through the URL
+RewriteCond %{QUERY_STRING} mosConfig_[a-zA-Z_]{1,21}(=|\%3D) [OR]
+
+# Block out any script trying to base64_encode crap to send via URL
+RewriteCond %{QUERY_STRING} base64_encode.*(.*) [OR]
+
+# Block out any script that includes a <script> tag in URL
+RewriteCond %{QUERY_STRING} (<|%3C).*script.*(>|%3E) [NC,OR]
+
+# Block out any script trying to set a PHP GLOBALS variable via URL
+RewriteCond %{QUERY_STRING} GLOBALS(=|[|\%[0-9A-Z]{0,2}) [OR]
+
+# Block out any script trying to modify a _REQUEST variable via URL
+RewriteCond %{QUERY_STRING} _REQUEST(=|[|\%[0-9A-Z]{0,2})
+
+# Send all blocked request to homepage with 403 Forbidden error!
+RewriteRule ^(.*)$ index.php [F,L]

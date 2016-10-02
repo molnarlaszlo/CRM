@@ -1,0 +1,22 @@
+# Notice: Crawling this site is prohibited unless you have express written
+# permission. See: http://wiki.ultrablock.hu/doc/654-514-545-458
+
+User-agent: *
+Disallow: /
+
+User-agent: Googlebot
+Allow: /
+Disallow: /bin
+Disallow: /data
+Disallow: /temp
+Disallow: /pages
+
+User-agent: Bingbot
+Allow: /
+Disallow: /bin
+Disallow: /data
+Disallow: /temp
+Disallow: /pages
+
+User-agent: ia_archiver
+Disallow: /
